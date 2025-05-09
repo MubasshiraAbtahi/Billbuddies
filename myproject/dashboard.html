@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Bill Buddies</title>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <!-- Dashboard Layout -->
+    <div class="dashboard-container">
+        <!-- Left Sidebar -->
+        <div class="sidebar">
+            <h2>Dashboard</h2>
+            <div class="menu">
+                <h3>Groups</h3>
+                <ul>
+                    <li>mmm <button class="add-btn">+ add</button></li>
+                </ul>
+                <h3>Friends</h3>
+                <ul>
+                    <li>km</li>
+                    <li>mmm</li>
+                    <li>mmmm</li>
+                </ul>
+            </div>
+            <div class="invite">
+                <h3>Invite friends</h3>
+                <input type="email" placeholder="Enter an email address" id="invite-email">
+                <button>Send invite</button>
+            </div>
+
+            <!-- Notification Section -->
+            <h3>Notifications</h3>
+            <ul id="notifications-list">
+                <!-- Notifications will be populated here -->
+                <!-- Example of how it will appear:
+                    <li>New expense added by John Doe - <a href="#">View</a></li>
+                -->
+            </ul>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <h1>You're all settled up. Awesome!</h1>
+            <p>To add a new expense, click the orange "Add an expense" button.</p>
+            <div class="buttons">
+                <button class="add-expense-btn">Add an expense</button>
+                <button class="settle-up-btn">Settle up</button>
+            </div>
+        </div>
+
+        <!-- Right Sidebar with App Links -->
+        <div class="right-sidebar">
+            <h3>SPLITWISE ON THE GO</h3>
+            <p>Get the free Splitwise app and add IOUs from anywhere:</p>
+            <a href="#" class="app-link">
+                <img src="app-store.png" alt="App Store" />
+            </a>
+            <a href="#" class="app-link">
+                <img src="google-play.png" alt="Google Play" />
+            </a>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+    <script>
+        // Fetch notifications from the backend and display them
+        fetchNotifications();
+
+        // Function to fetch notifications
+        function fetchNotifications() {
+            fetch('get_notifications.php') // This file will handle fetching notifications for the logged-in user
+                .then(response => response.json())
+                .then(data => {
+                    const notificationsList = document.getElementById('notifications-list');
+                    notificationsList.innerHTML = ''; // Clear existing notifications
+
+                    // Check if there are notifications
+                    if (data.notifications.length > 0) {
+                        data.notifications.forEach(notification => {
+                            const notificationItem = document.createElement('li');
+                            notificationItem.innerHTML = `${notification.message} - <a href="#" onclick="markAsRead(${notification.id})">Mark as Read</a>`;
+                            notificationsList.appendChild(notificationItem);
+                        });
+                    } else {
+                        notificationsList.innerHTML = '<li>No new notifications.</li>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching notifications:', error);
+                });
+        }
+
+        // Function to mark a notification as read
+        function markAsRead(notificationId) {
+            fetch(`mark_notification_read.php?id=${notificationId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Notification marked as read');
+                        fetchNotifications(); // Refresh the notifications
+                    } else {
+                        alert('Failed to mark notification as read');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error marking notification as read:', error);
+                });
+        }
+    </script>
+</body>
+</html>

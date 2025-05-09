@@ -1,0 +1,133 @@
+/* Basic reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Dashboard container */
+.dashboard-container {
+    display: flex;
+    height: 100vh;
+}
+
+/* Sidebar styling */
+.sidebar {
+    width: 250px;
+    background-color: #f4f4f4;
+    padding: 20px;
+    box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.menu h3 {
+    font-size: 18px;
+    margin-top: 20px;
+}
+
+ul {
+    list-style-type: none;
+}
+
+ul li {
+    padding: 5px 0;
+}
+
+.add-btn {
+    margin-left: 10px;
+    background-color: #00b8d4;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Invite section */
+.invite {
+    margin-top: 30px;
+}
+
+.invite input {
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.invite button {
+    width: 100%;
+    padding: 10px;
+    background-color: #00b8d4;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+/* Main content styling */
+.main-content {
+    flex: 1;
+    padding: 20px;
+    text-align: center;
+    background-color: #ffffff;
+}
+
+.main-content h1 {
+    font-size: 32px;
+    color: #444;
+}
+
+.main-content p {
+    color: #777;
+    font-size: 18px;
+    margin: 20px 0;
+}
+
+.buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.add-expense-btn, .settle-up-btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.add-expense-btn {
+    background-color: #f57c00;
+    color: white;
+    border: none;
+}
+
+.settle-up-btn {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+}
+
+/* Right sidebar */
+.right-sidebar {
+    width: 250px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    box-shadow: -2px 0px 5px rgba(0, 0, 0, 0.1);
+}
+
+.right-sidebar h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.app-link img {
+    width: 100%;
+    margin-bottom: 10px;
+}

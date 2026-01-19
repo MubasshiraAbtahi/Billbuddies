@@ -237,7 +237,7 @@ router.post(
     }
 
     expense.comments.push({
-      userId: req.userId,
+      userId: req.user.id,
       text,
     });
 

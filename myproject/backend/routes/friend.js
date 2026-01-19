@@ -19,7 +19,7 @@ router.get(
 
     const users = await User.find({
       $and: [
-        { _id: { $ne: req.user.id } }, // Exclude self
+        { _id: { $ne: req.user._id } }, // Exclude self
         {
           $or: [
             { email: { $regex: query, $options: 'i' } },
@@ -37,16 +37,16 @@ router.get(
       users.map(async (user) => {
         const isFriend = await Friendship.findOne({
           $or: [
-            { user1: req.user.id, user2: user._id },
-            { user1: user._id, user2: req.user.id },
+            { user1: req.user._id, user2: user._id },
+            { user1: user._id, user2: req.user._id },
           ],
           status: 'active',
         });
 
         const pendingRequest = await FriendRequest.findOne({
           $or: [
-            { sender: req.user.id, recipient: user._id },
-            { sender: user._id, recipient: req.user.id },
+            { sender: req.user._id, recipient: user._id },
+            { sender: user._id, recipient: req.user._id },
           ],
           status: 'pending',
         });
@@ -55,7 +55,7 @@ router.get(
           ...user.toObject(),
           isFriend: !!isFriend,
           hasPendingRequest: !!pendingRequest,
-          requestSentByMe: pendingRequest?.sender?.toString() === req.user.id,
+          requestSentByMe: pendingRequest?.sender?.toString() === req.user._id.toString(),
         };
       })
     );
@@ -88,15 +88,15 @@ router.post(
       return res.status(404).json({ message: 'User not found' });
     }
 
-    if (recipient._id.toString() === req.user.id) {
+    if (recipient._id.toString() === req.user._id.toString()) {
       return res.status(400).json({ message: 'Cannot send request to yourself' });
     }
 
     // Check if already friends
     const existing = await Friendship.findOne({
       $or: [
-        { user1: req.user.id, user2: recipient._id },
-        { user1: recipient._id, user2: req.user.id },
+        { user1: req.user._id, user2: recipient._id },
+        { user1: recipient._id, user2: req.user._id },
       ],
       status: 'active',
     });
@@ -107,7 +107,7 @@ router.post(
 
     // Check if request already sent
     const existingRequest = await FriendRequest.findOne({
-      sender: req.user.id,
+      sender: req.user._id,
       recipient: recipient._id,
       status: 'pending',
     });
@@ -117,7 +117,7 @@ router.post(
     }
 
     const request = new FriendRequest({
-      sender: req.user.id,
+      sender: req.user._id,
       recipient: recipient._id,
       message,
     });
@@ -139,7 +139,7 @@ router.get(
   authenticate,
   asyncHandler(async (req, res) => {
     const requests = await FriendRequest.find({
-      recipient: req.user.id,
+      recipient: req.user._id,
       status: 'pending',
     })
       .populate('sender', 'username email firstName lastName profilePicture')
@@ -163,7 +163,7 @@ router.post(
       return res.status(404).json({ message: 'Request not found' });
     }
 
-    if (request.recipient.toString() !== req.user.id) {
+    if (request.recipient.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
@@ -198,7 +198,7 @@ router.post(
       return res.status(404).json({ message: 'Request not found' });
     }
 
-    if (request.recipient.toString() !== req.user.id) {
+    if (request.recipient.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
@@ -218,12 +218,12 @@ router.get(
   authenticate,
   asyncHandler(async (req, res) => {
     const friendships = await Friendship.find({
-      $or: [{ user1: req.user.id }, { user2: req.user.id }],
+      $or: [{ user1: req.user._id }, { user2: req.user._id }],
       status: 'active',
     }).populate('user1 user2', 'username email firstName lastName profilePicture');
 
     const friends = friendships.map((friendship) => {
-      return friendship.user1._id.toString() === req.user.id
+      return friendship.user1._id.toString() === req.user._id.toString()
         ? friendship.user2
         : friendship.user1;
     });
@@ -242,8 +242,8 @@ router.post(
   asyncHandler(async (req, res) => {
     const friendship = await Friendship.findOneAndDelete({
       $or: [
-        { user1: req.user.id, user2: req.params.friendId },
-        { user1: req.params.friendId, user2: req.user.id },
+        { user1: req.user._id, user2: req.params.friendId },
+        { user1: req.params.friendId, user2: req.user._id },
       ],
       status: 'active',
     });

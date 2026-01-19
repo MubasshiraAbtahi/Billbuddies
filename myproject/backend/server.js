@@ -37,57 +37,82 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Connect to Database
-connectDB();
+console.log('📌 Starting connection to database...');
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/user', userRoutes);
-app.use('/api/friend', friendRoutes);
-app.use('/api/group', groupRoutes);
-app.use('/api/expense', expenseRoutes);
-app.use('/api/payment', paymentRoutes);
-app.use('/api/scanner', scannerRoutes);
-app.use('/api/chat', chatRoutes);
-app.use('/api/notification', notificationRoutes);
+async function startServer() {
+  try {
+    await connectDB();
+    console.log('✓ Database ready, setting up routes...');
+    
+    // Routes
+    console.log('📌 Setting up routes...');
+    app.use('/api/auth', authRoutes);
+    app.use('/api/user', userRoutes);
+    app.use('/api/friend', friendRoutes);
+    app.use('/api/group', groupRoutes);
+    app.use('/api/expense', expenseRoutes);
+    app.use('/api/payment', paymentRoutes);
+    app.use('/api/scanner', scannerRoutes);
+    app.use('/api/chat', chatRoutes);
+    app.use('/api/notification', notificationRoutes);
 
-// Socket.io setup for real-time features
-io.on('connection', (socket) => {
-  console.log('New user connected:', socket.id);
+    // Socket.io setup for real-time features
+    io.on('connection', (socket) => {
+      console.log('New user connected:', socket.id);
 
-  socket.on('join-room', (groupId) => {
-    socket.join(`group-${groupId}`);
-  });
+      socket.on('join-room', (groupId) => {
+        socket.join(`group-${groupId}`);
+      });
 
-  socket.on('leave-room', (groupId) => {
-    socket.leave(`group-${groupId}`);
-  });
+      socket.on('leave-room', (groupId) => {
+        socket.leave(`group-${groupId}`);
+      });
 
-  socket.on('send-message', (data) => {
-    io.to(`group-${data.groupId}`).emit('receive-message', data);
-  });
+      socket.on('send-message', (data) => {
+        io.to(`group-${data.groupId}`).emit('receive-message', data);
+      });
 
-  socket.on('expense-added', (data) => {
-    io.to(`group-${data.groupId}`).emit('expense-updated', data);
-  });
+      socket.on('expense-added', (data) => {
+        io.to(`group-${data.groupId}`).emit('expense-updated', data);
+      });
 
-  socket.on('payment-made', (data) => {
-    io.to(`group-${data.groupId}`).emit('balance-updated', data);
-  });
+      socket.on('payment-made', (data) => {
+        io.to(`group-${data.groupId}`).emit('balance-updated', data);
+      });
 
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
-  });
-});
+      socket.on('disconnect', () => {
+        console.log('User disconnected:', socket.id);
+      });
+    });
 
-// Error handling middleware
-app.use(errorHandler);
+    // Error handling middleware
+    console.log('📌 Setting up error handling...');
+    app.use(errorHandler);
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
-});
+    // 404 handler
+    app.use((req, res) => {
+      res.status(404).json({ message: 'Route not found' });
+    });
 
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+    const PORT = process.env.PORT || 3001;
+    console.log(`📌 About to listen on port ${PORT}...`);
+    
+    server.listen(PORT, '127.0.0.1', () => {
+      console.log(`✓ Server is now listening on http://127.0.0.1:${PORT}`);
+      const addr = server.address();
+      console.log(`  Actual address: ${JSON.stringify(addr)}`);
+    });
+    
+    server.on('error', (err) => {
+      console.error('❌ Server error:', err.message);
+      process.exit(1);
+    });
+    
+  } catch (err) {
+    console.error('Fatal error during startup:', err);
+    process.exit(1);
+  }
+}
+
+startServer();
+

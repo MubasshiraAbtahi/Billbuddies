@@ -98,4 +98,12 @@ UserSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcryptjs.compare(candidatePassword, this.password);
 };
 
+// Virtual getter for .id -> ._id compatibility
+UserSchema.virtual('id').get(function() {
+  return this._id;
+});
+
+// Ensure virtuals are included when converting to JSON
+UserSchema.set('toJSON', { virtuals: true });
+
 export default mongoose.model('User', UserSchema);

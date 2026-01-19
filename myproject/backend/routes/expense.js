@@ -64,7 +64,7 @@ router.post(
       amount,
       currency: currency || 'USD',
       category: category || 'Other',
-      payer: req.user.id,
+      payer: req.user._id,
       group: groupId,
       splitMethod,
       splits: splits || [],
@@ -167,7 +167,7 @@ router.put(
       return res.status(404).json({ message: 'Expense not found' });
     }
 
-    if (expense.payer.toString() !== req.user.id) {
+    if (expense.payer.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Only payer can edit expense' });
     }
 
@@ -208,7 +208,7 @@ router.delete(
       return res.status(404).json({ message: 'Expense not found' });
     }
 
-    if (expense.payer.toString() !== req.user.id) {
+    if (expense.payer.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Only payer can delete expense' });
     }
 
@@ -268,6 +268,47 @@ router.post(
     res.json({
       success: true,
       message: 'Expense flagged as disputed',
+    });
+  })
+);
+
+// Get recent activity feed (last 10 expenses across all user's groups)
+router.get(
+  '/activity/feed',
+  authenticate,
+  asyncHandler(async (req, res) => {
+    // First, get all groups the user is part of
+    const userGroups = await Group.find({
+      'members.userId': req.user.id,
+    });
+
+    const groupIds = userGroups.map(g => g._id);
+
+    // Get last 10 expenses from these groups
+    const recentExpenses = await Expense.find({
+      group: { $in: groupIds },
+    })
+      .populate('payer', 'username email profilePicture firstName lastName')
+      .populate('group', 'name')
+      .populate('splits.userId', 'username')
+      .sort({ createdAt: -1 })
+      .limit(10);
+
+    // Add user's share for each expense
+    const expensesWithShare = recentExpenses.map(expense => {
+      const userSplit = expense.splits.find(
+        split => split.userId._id.toString() === req.user.id
+      );
+
+      return {
+        ...expense.toObject(),
+        userShare: userSplit ? userSplit.amount : 0,
+      };
+    });
+
+    res.json({
+      success: true,
+      expenses: expensesWithShare,
     });
   })
 );

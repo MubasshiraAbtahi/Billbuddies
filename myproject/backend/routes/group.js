@@ -17,11 +17,11 @@ router.post(
     const group = new Group({
       name,
       description,
-      creator: req.user.id,
+      creator: req.user._id,
       defaultSplitMethod: defaultSplitMethod || 'equal',
       currency: currency || 'USD',
       members: [
-        { userId: req.user.id, role: 'admin' },
+        { userId: req.user._id, role: 'admin' },
         ...members.map((memberId) => ({ userId: memberId, role: 'member' })),
       ],
     });
@@ -43,7 +43,7 @@ router.get(
   authenticate,
   asyncHandler(async (req, res) => {
     const groups = await Group.find({
-      'members.userId': req.user.id,
+      'members.userId': req.user._id,
       isArchived: false,
     }).populate('members.userId', 'username email profilePicture creator');
 
@@ -99,7 +99,7 @@ router.post(
 
     // Check if user is admin
     const isAdmin = group.members.some(
-      (m) => m.userId.toString() === req.user.id && m.role === 'admin'
+      (m) => m.userId.toString() === req.user._id.toString() && m.role === 'admin'
     );
 
     if (!isAdmin) {
@@ -140,8 +140,8 @@ router.post(
     const unsettledBalances = await Balance.findOne({
       group: req.params.groupId,
       $or: [
-        { debtor: req.user.id, status: 'pending' },
-        { creditor: req.user.id, status: 'pending' },
+        { debtor: req.user._id, status: 'pending' },
+        { creditor: req.user._id, status: 'pending' },
       ],
     });
 
@@ -152,7 +152,7 @@ router.post(
     }
 
     group.members = group.members.filter(
-      (m) => m.userId.toString() !== req.user.id
+      (m) => m.userId.toString() !== req.user._id.toString()
     );
 
     await group.save();
@@ -176,7 +176,7 @@ router.post(
     }
 
     const isAdmin = group.members.some(
-      (m) => m.userId.toString() === req.user.id && m.role === 'admin'
+      (m) => m.userId.toString() === req.user._id.toString() && m.role === 'admin'
     );
 
     if (!isAdmin) {
@@ -204,7 +204,7 @@ router.delete(
       return res.status(404).json({ message: 'Group not found' });
     }
 
-    if (group.creator.toString() !== req.user.id) {
+    if (group.creator.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Only creator can delete group' });
     }
 

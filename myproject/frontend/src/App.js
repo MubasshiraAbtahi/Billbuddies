@@ -6,8 +6,10 @@ import { GroupProvider } from './context/GroupContext';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import Dashboard from './pages/Dashboard';
+import FriendsPage from './pages/FriendsPage';
+import GroupsPage from './pages/GroupsPage';
 import GroupDetail from './pages/GroupDetail';
-import BalanceDashboard from './components/BalanceDashboard';
+import ProfilePage from './pages/ProfilePage';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -25,60 +27,64 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Toaster position="top-right" />
-      
-      {user && <Navigation />}
 
-      <main className={user ? 'max-w-7xl mx-auto px-4 py-8' : ''}>
-        <Routes>
-          <Route path="/login" element={<LoginPage onLoginSuccess={() => {}} />} />
-          <Route path="/signup" element={<SignupPage onSignupSuccess={() => {}} />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/group/:groupId"
-            element={
-              <ProtectedRoute>
-                <GroupDetail />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/balances"
-            element={
-              <ProtectedRoute>
-                <BalanceDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
-        </Routes>
-      </main>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/friends"
+          element={
+            <ProtectedRoute>
+              <FriendsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/groups"
+          element={
+            <ProtectedRoute>
+              <GroupsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/group/:groupId"
+          element={
+            <ProtectedRoute>
+              <GroupDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
+      </Routes>
     </div>
   );
 }
 
-function Navigation() {
-  const { logout } = useAuth();
-
+function AppWrapper() {
   return (
-    <nav className="bg-white border-b">
-      <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-indigo-600">Bill Buddies</h1>
-        <button
-          onClick={logout}
-          className="px-4 py-2 text-red-600 hover:bg-red-50 rounded"
-        >
-          Logout
-        </button>
-      </div>
-    </nav>
+    <AuthProvider>
+      <GroupProvider>
+        <App />
+      </GroupProvider>
+    </AuthProvider>
   );
 }
 
-export default App;
+export default AppWrapper;

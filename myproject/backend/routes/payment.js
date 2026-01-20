@@ -262,7 +262,7 @@ router.get(
   '/summary/dashboard',
   authenticate,
   asyncHandler(async (req, res) => {
-    const userId = req.userId;
+    const userId = req.user._id;
 
     // Get balances
     const youOwe = await Balance.find({
@@ -296,6 +296,23 @@ router.get(
       isArchived: false,
     });
 
+    // Import Friend models to count friends and pending requests
+    const { Friendship, FriendRequest } = await import('../models/Friend.js');
+
+    // Count actual friends (accepted friendships)
+    const friendsCount = await Friendship.countDocuments({
+      $or: [
+        { user1: userId, status: 'active' },
+        { user2: userId, status: 'active' },
+      ],
+    });
+
+    // Count pending friend requests (received)
+    const pendingRequests = await FriendRequest.countDocuments({
+      recipient: userId,
+      status: 'pending',
+    });
+
     res.json({
       success: true,
       balance: {
@@ -308,6 +325,8 @@ router.get(
       youAreOwed,
       recentExpenses,
       groupsCount,
+      friendsCount,
+      pendingRequests,
     });
   })
 );

@@ -4,6 +4,7 @@ import { asyncHandler } from '../middleware/errorHandler.js';
 import Group from '../models/Group.js';
 import Expense from '../models/Expense.js';
 import { Balance } from '../models/Payment.js';
+import { Friendship, FriendRequest } from '../models/Friend.js';
 
 const router = express.Router();
 
@@ -12,22 +13,91 @@ router.post(
   '/create',
   authenticate,
   asyncHandler(async (req, res) => {
-    const { name, description, members, defaultSplitMethod, currency } = req.body;
+    const { name, description, members, defaultSplitMethod, currency, icon } = req.body;
+    const userId = req.user._id;
 
+    // Validation 1: Group name is required
+    if (!name || name.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: 'Group name is required',
+      });
+    }
+
+    // Validation 2: At least one member must be selected
+    if (!members || members.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please select at least one member',
+      });
+    }
+
+    // Validation 3: CRITICAL - Verify all selected members are actually friends
+    // This prevents malicious users from manipulating the frontend and adding non-friends
+    const friendIds = await Friendship.find({
+      $or: [
+        { user1: userId, status: 'active' },
+        { user2: userId, status: 'active' },
+      ],
+    }).select('user1 user2');
+
+    // Create a set of friend IDs for efficient lookup
+    const actualFriendIds = new Set();
+    friendIds.forEach((friendship) => {
+      const friendId = friendship.user1.toString() === userId.toString() 
+        ? friendship.user2.toString() 
+        : friendship.user1.toString();
+      actualFriendIds.add(friendId);
+    });
+
+    // Check if all selected members are in the friends list
+    const unauthorizedMembers = members.filter(
+      (memberId) => !actualFriendIds.has(memberId.toString())
+    );
+
+    if (unauthorizedMembers.length > 0) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only add friends to a group. Some selected members are not your friends.',
+      });
+    }
+
+    // Create the group
     const group = new Group({
       name,
       description,
-      creator: req.user._id,
+      icon: icon || '👥',
+      creator: userId,
       defaultSplitMethod: defaultSplitMethod || 'equal',
       currency: currency || 'USD',
       members: [
-        { userId: req.user._id, role: 'admin' },
+        { userId, role: 'admin' },
         ...members.map((memberId) => ({ userId: memberId, role: 'member' })),
       ],
     });
 
     await group.save();
-    await group.populate('members.userId', 'username email profilePicture');
+    await group.populate('members.userId', 'username email profilePicture firstName lastName');
+
+    // Send notifications to newly added members
+    try {
+      const { Notification } = await import('../models/Notification.js');
+      const memberPromises = members.map((memberId) =>
+        Notification.create({
+          recipient: memberId,
+          sender: userId,
+          type: 'group_invite',
+          title: `Added to Group: ${name}`,
+          message: `You've been added to "${name}" by ${req.user.firstName}`,
+          relatedId: group._id,
+          relatedType: 'Group',
+        })
+      );
+      await Promise.all(memberPromises);
+    } catch (notificationError) {
+      console.log('Notification creation failed, but group was created:', notificationError.message);
+      // Don't fail group creation if notifications fail
+    }
 
     res.status(201).json({
       success: true,

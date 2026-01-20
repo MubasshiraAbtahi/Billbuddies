@@ -106,7 +106,7 @@ router.get(
   '/verify',
   authenticate,
   asyncHandler(async (req, res) => {
-    const user = await User.findById(req.userId).select('-password');
+    const user = await User.findById(req.user._id).select('-password');
     res.json({
       success: true,
       user,

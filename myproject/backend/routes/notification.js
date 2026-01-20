@@ -11,7 +11,7 @@ router.get(
   authenticate,
   asyncHandler(async (req, res) => {
     const notifications = await Notification.find({
-      recipient: req.userId,
+      recipient: req.user._id,
     })
       .sort({ createdAt: -1 })
       .limit(50);
@@ -50,7 +50,7 @@ router.put(
   authenticate,
   asyncHandler(async (req, res) => {
     await Notification.updateMany(
-      { recipient: req.userId },
+      { recipient: req.user._id },
       { isRead: true }
     );
 

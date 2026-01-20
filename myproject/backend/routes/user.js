@@ -11,7 +11,7 @@ const storage = multer.diskStorage({
     cb(null, './uploads/profiles');
   },
   filename: (req, file, cb) => {
-    cb(null, `${req.userId}-${Date.now()}-${file.originalname}`);
+    cb(null, `${req.user._id}-${Date.now()}-${file.originalname}`);
   },
 });
 
@@ -22,7 +22,7 @@ router.get(
   '/profile',
   authenticate,
   asyncHandler(async (req, res) => {
-    const user = await User.findById(req.userId).select('-password');
+    const user = await User.findById(req.user._id).select('-password');
     res.json({
       success: true,
       user,

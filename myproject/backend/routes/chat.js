@@ -13,7 +13,7 @@ router.post(
     const { groupId, text, type, expenseId, paymentId, attachments } = req.body;
 
     const message = new Message({
-      sender: req.userId,
+      sender: req.user._id,
       group: groupId,
       text,
       type: type || 'text',
@@ -63,7 +63,7 @@ router.post(
   asyncHandler(async (req, res) => {
     await Message.updateMany(
       { group: req.params.groupId },
-      { $addToSet: { readBy: req.userId } }
+      { $addToSet: { readBy: req.user._id } }
     );
 
     res.json({
@@ -84,7 +84,7 @@ router.delete(
       return res.status(404).json({ message: 'Message not found' });
     }
 
-    if (message.sender.toString() !== req.userId) {
+    if (message.sender.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 

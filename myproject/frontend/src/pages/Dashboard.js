@@ -92,8 +92,8 @@ function Dashboard() {
         {/* Section 4: Quick Access Cards */}
         <QuickAccessCards
           groupsCount={dashboardData?.groupsCount || 0}
-          friendsCount={0}
-          pendingRequests={0}
+          friendsCount={dashboardData?.friendsCount || 0}
+          pendingRequests={dashboardData?.pendingRequests || 0}
         />
       </div>
 

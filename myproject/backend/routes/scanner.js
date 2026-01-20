@@ -107,7 +107,7 @@ router.post(
 
     // Check if user is group member
     const isMember = group.members.some(
-      (member) => member.userId.toString() === req.userId
+      (member) => member.userId.toString() === req.user._id.toString()
     );
     if (!isMember) {
       return res.status(403).json({ message: 'You are not a member of this group' });
@@ -119,7 +119,7 @@ router.post(
       amount,
       currency,
       category,
-      payer: req.userId,
+      payer: req.user._id,
       group: groupId,
       splitMethod: 'itemized',
       itemizedList: items,

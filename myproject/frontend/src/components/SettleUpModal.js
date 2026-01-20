@@ -59,7 +59,7 @@ function SettleUpModal({ balances, onClose, onSuccess }) {
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
           >
-            <XIcon className="w-6 h-6" />
+            <XMarkIcon className="w-6 h-6" />
           </button>
         </div>
 

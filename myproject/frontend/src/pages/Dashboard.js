@@ -8,6 +8,7 @@ import ActivityFeed from '../components/ActivityFeed';
 import QuickAccessCards from '../components/QuickAccessCards';
 import AddExpenseModal from '../components/AddExpenseModal';
 import SettleUpModal from '../components/SettleUpModal';
+import { ColorfulButton, LoadingSpinner, ProfileCircle } from '../components/UI';
 import toast from 'react-hot-toast';
 
 function Dashboard() {
@@ -48,53 +49,155 @@ function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         <TopNav />
-        <div className="max-w-7xl mx-auto px-4 py-8 flex justify-center">
+        <div className="max-w-7xl mx-auto px-4 py-16 flex justify-center items-center min-h-[500px]">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-            <p className="mt-4 text-gray-600">Loading your dashboard...</p>
+            <LoadingSpinner size="lg" color="brand-pink" />
+            <p className="mt-6 text-gray-600 font-medium">Loading your dashboard...</p>
           </div>
         </div>
       </div>
     );
   }
 
+  const balanceAmount = dashboardData?.balance?.total || 0;
+  const isOwing = balanceAmount < 0;
+  const isOwed = balanceAmount > 0;
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <TopNav />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Banner */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Welcome back, {user?.firstName || 'User'}!
-          </h1>
-          <p className="text-gray-600 mt-2">Here's your financial summary</p>
+        {/* Profile Card Section */}
+        <div className="mb-8 animate-slide-up">
+          <div className="bg-white rounded-2xl shadow-medium p-8 border-l-4 border-gradient-sunset">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-6">
+                <ProfileCircle
+                  name={`${user?.firstName} ${user?.lastName}`}
+                  color="bg-gradient-sunset"
+                  size="xl"
+                  ring={true}
+                />
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    Welcome back, {user?.firstName}! 👋
+                  </h1>
+                  <p className="text-gray-600 mt-1">Let's manage your shared expenses together</p>
+                </div>
+              </div>
+              <div className="hidden md:flex items-center gap-3">
+                <span className="text-sm text-gray-500">Last synced</span>
+                <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">
+                  ✓ Now
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Section 1: Balance Summary */}
-        <BalanceSummary
-          balance={dashboardData?.balance?.total || 0}
-          onAddExpense={() => setShowAddExpense(true)}
-          onSettleUp={() => setShowSettleUp(true)}
-        />
+        {/* Balance Display Card */}
+        <div className="mb-8 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+          <div className={`rounded-2xl shadow-medium p-8 text-white relative overflow-hidden ${
+            isOwing ? 'bg-gradient-danger' : isOwed ? 'bg-gradient-success' : 'bg-gradient-ocean'
+          }`}>
+            {/* Decorative elements */}
+            <div className="absolute top--10 right--10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
+            <div className="absolute bottom--5 left-1/4 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
 
-        {/* Section 2: Outstanding Balances */}
-        <OutstandingBalances
-          youOwe={dashboardData?.youOwe || []}
-          youAreOwed={dashboardData?.youAreOwed || []}
-        />
+            <div className="relative z-10">
+              <p className="text-white/80 text-lg mb-2">Your Balance</p>
+              <h2 className="text-5xl font-bold mb-6">
+                {isOwing ? '-' : isOwed ? '+' : ''} ${Math.abs(balanceAmount).toFixed(2)}
+              </h2>
+              <p className="text-white/90 font-medium">
+                {isOwing
+                  ? '💸 You owe this amount to your friends'
+                  : isOwed
+                  ? '💰 Your friends owe you this amount'
+                  : '✨ All settled up! No balances'}
+              </p>
+            </div>
+          </div>
+        </div>
 
-        {/* Section 3: Recent Activity Feed */}
-        <ActivityFeed expenses={dashboardData?.recentExpenses || []} />
+        {/* Quick Action Buttons */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          <button
+            onClick={() => setShowAddExpense(true)}
+            className="group relative bg-white rounded-2xl p-6 shadow-subtle hover:shadow-medium transition-all duration-300 text-center active:scale-95 h-24 flex flex-col items-center justify-center hover:-translate-y-1"
+          >
+            <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">➕</div>
+            <span className="font-semibold text-gray-800 text-sm">Add Expense</span>
+          </button>
 
-        {/* Section 4: Quick Access Cards */}
-        <QuickAccessCards
-          groupsCount={dashboardData?.groupsCount || 0}
-          friendsCount={dashboardData?.friendsCount || 0}
-          pendingRequests={dashboardData?.pendingRequests || 0}
-        />
+          <button
+            onClick={() => navigate('/groups')}
+            className="group relative bg-white rounded-2xl p-6 shadow-subtle hover:shadow-medium transition-all duration-300 text-center active:scale-95 h-24 flex flex-col items-center justify-center hover:-translate-y-1"
+          >
+            <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">👥</div>
+            <span className="font-semibold text-gray-800 text-sm">Create Group</span>
+          </button>
+
+          <button
+            onClick={() => navigate('/friends')}
+            className="group relative bg-white rounded-2xl p-6 shadow-subtle hover:shadow-medium transition-all duration-300 text-center active:scale-95 h-24 flex flex-col items-center justify-center hover:-translate-y-1"
+          >
+            <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">🤝</div>
+            <span className="font-semibold text-gray-800 text-sm">Friends</span>
+          </button>
+
+          <button
+            onClick={() => setShowSettleUp(true)}
+            className="group relative bg-white rounded-2xl p-6 shadow-subtle hover:shadow-medium transition-all duration-300 text-center active:scale-95 h-24 flex flex-col items-center justify-center hover:-translate-y-1"
+          >
+            <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">✓</div>
+            <span className="font-semibold text-gray-800 text-sm">Settle Up</span>
+          </button>
+        </div>
+
+        {/* Stats Row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 animate-slide-up" style={{ animationDelay: '0.3s' }}>
+          <div className="bg-white rounded-2xl p-6 shadow-subtle border-t-4 border-brand-pink">
+            <p className="text-gray-600 text-sm font-medium">Friends Count</p>
+            <p className="text-3xl font-bold text-brand-pink mt-2">{dashboardData?.friendsCount || 0}</p>
+          </div>
+          <div className="bg-white rounded-2xl p-6 shadow-subtle border-t-4 border-brand-orange">
+            <p className="text-gray-600 text-sm font-medium">Your Groups</p>
+            <p className="text-3xl font-bold text-brand-orange mt-2">{dashboardData?.groupsCount || 0}</p>
+          </div>
+          <div className="bg-white rounded-2xl p-6 shadow-subtle border-t-4 border-brand-teal">
+            <p className="text-gray-600 text-sm font-medium">Pending Requests</p>
+            <p className="text-3xl font-bold text-brand-teal mt-2">{dashboardData?.pendingRequests || 0}</p>
+          </div>
+        </div>
+
+        {/* Main Content Sections */}
+        <div className="space-y-8">
+          {/* Section 1: Balance Summary */}
+          <div className="animate-slide-up" style={{ animationDelay: '0.4s' }}>
+            <BalanceSummary
+              balance={dashboardData?.balance?.total || 0}
+              onAddExpense={() => setShowAddExpense(true)}
+              onSettleUp={() => setShowSettleUp(true)}
+            />
+          </div>
+
+          {/* Section 2: Outstanding Balances */}
+          <div className="animate-slide-up" style={{ animationDelay: '0.5s' }}>
+            <OutstandingBalances
+              youOwe={dashboardData?.youOwe || []}
+              youAreOwed={dashboardData?.youAreOwed || []}
+            />
+          </div>
+
+          {/* Section 3: Recent Activity Feed */}
+          <div className="animate-slide-up" style={{ animationDelay: '0.6s' }}>
+            <ActivityFeed expenses={dashboardData?.recentExpenses || []} />
+          </div>
+        </div>
       </div>
 
       {/* Modals */}

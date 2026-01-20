@@ -77,6 +77,7 @@ function Dashboard() {
               <div className="flex items-center gap-6">
                 <ProfileCircle
                   name={`${user?.firstName} ${user?.lastName}`}
+                  image={user?.profilePicture}
                   color="bg-gradient-sunset"
                   size="xl"
                   ring={true}
@@ -93,6 +94,50 @@ function Dashboard() {
                 <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">
                   ✓ Now
                 </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Hero Section with Collaborative Image */}
+        <div className="mb-8 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+          <div className="relative bg-gradient-to-r from-brand-pink/10 via-brand-purple/10 to-brand-orange/10 rounded-2xl overflow-hidden shadow-medium">
+            <div className="absolute inset-0 opacity-20">
+              <div className="absolute top-0 left-0 w-72 h-72 bg-brand-pink rounded-full mix-blend-multiply filter blur-3xl"></div>
+              <div className="absolute top-0 right-0 w-72 h-72 bg-brand-orange rounded-full mix-blend-multiply filter blur-3xl"></div>
+              <div className="absolute bottom-0 left-1/2 w-72 h-72 bg-brand-teal rounded-full mix-blend-multiply filter blur-3xl"></div>
+            </div>
+            <div className="relative px-8 py-12 md:py-16 flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="flex-1 text-center md:text-left">
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                  Collaborate & Split Smartly 🤝
+                </h2>
+                <p className="text-lg text-gray-700 mb-6 max-w-lg">
+                  Make expense sharing effortless with friends and groups. Track who owes whom and settle up in seconds.
+                </p>
+                <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+                  <ColorfulButton
+                    gradient="sunset"
+                    size="md"
+                    onClick={() => setShowAddExpense(true)}
+                  >
+                    ➕ Add Expense
+                  </ColorfulButton>
+                  <ColorfulButton
+                    variant="outline"
+                    size="md"
+                    onClick={() => navigate('/groups')}
+                  >
+                    👥 View Groups
+                  </ColorfulButton>
+                </div>
+              </div>
+              <div className="flex-1 flex justify-center">
+                <img 
+                  src="/collaborative-hands.svg" 
+                  alt="Collaborative expense sharing" 
+                  className="w-full max-w-md h-auto drop-shadow-lg hover:scale-105 transition-transform duration-300"
+                />
               </div>
             </div>
           </div>

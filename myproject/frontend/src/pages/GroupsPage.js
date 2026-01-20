@@ -118,10 +118,15 @@ function GroupsPage() {
 
                   {/* Members avatars */}
                   <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/30">
-                    {group.members.slice(0, 4).map((member, idx) => (
-                      <div key={member._id} className="w-8 h-8 rounded-full bg-white/30 border-2 border-white flex items-center justify-center text-xs font-bold">
-                        {`${member.firstName?.[0]}${member.lastName?.[0]}`.toUpperCase()}
-                      </div>
+                    {group.members.slice(0, 4).map((member) => (
+                      <ProfileCircle
+                        key={member._id}
+                        name={`${member.firstName} ${member.lastName}`}
+                        image={member.profilePicture}
+                        color="bg-white/30"
+                        size="sm"
+                        ring={false}
+                      />
                     ))}
                     {group.members.length > 4 && (
                       <div className="w-8 h-8 rounded-full bg-white/30 border-2 border-white flex items-center justify-center text-xs font-bold">

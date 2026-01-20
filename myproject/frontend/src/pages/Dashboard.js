@@ -134,9 +134,9 @@ function Dashboard() {
               </div>
               <div className="flex-1 flex justify-center">
                 <img 
-                  src="/collaborative-hands.svg" 
+                  src="/hero-image.jpg" 
                   alt="Collaborative expense sharing" 
-                  className="w-full max-w-md h-auto drop-shadow-lg hover:scale-105 transition-transform duration-300"
+                  className="w-full max-w-md h-auto drop-shadow-lg hover:scale-105 transition-transform duration-300 rounded-2xl"
                 />
               </div>
             </div>
